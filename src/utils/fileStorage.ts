@@ -18,16 +18,23 @@ interface StoredFile {
 }
 
 let dbInstance: IDBDatabase | null = null;
+let initPromise: Promise<IDBDatabase> | null = null;
 
 export async function initDB(): Promise<IDBDatabase> {
   if (dbInstance) return dbInstance;
+  if (initPromise) return initPromise;
 
-  return new Promise((resolve, reject) => {
+  initPromise = new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onerror = () => reject(request.error);
+    request.onerror = () => {
+      initPromise = null;
+      reject(request.error);
+    };
+    
     request.onsuccess = () => {
       dbInstance = request.result;
+      initPromise = null;
       resolve(request.result);
     };
 
@@ -40,6 +47,8 @@ export async function initDB(): Promise<IDBDatabase> {
       }
     };
   });
+
+  return initPromise;
 }
 
 export async function storeFile(file: File, id: string): Promise<void> {

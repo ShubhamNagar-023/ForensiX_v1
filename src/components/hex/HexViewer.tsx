@@ -13,10 +13,12 @@ export default function HexViewer() {
   const VISIBLE_ROWS = 32;
 
   // Reset offset when selectedFileEntry changes
-  if (selectedFileEntry?.id !== currentFileId) {
-    setCurrentFileId(selectedFileEntry?.id || null);
-    setOffset(0);
-  }
+  useEffect(() => {
+    if (selectedFileEntry?.id !== currentFileId) {
+      setCurrentFileId(selectedFileEntry?.id || null);
+      setOffset(0);
+    }
+  }, [selectedFileEntry, currentFileId]);
 
   // Load actual file data from IndexedDB when file is selected
   useEffect(() => {

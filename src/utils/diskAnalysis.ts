@@ -366,7 +366,7 @@ export async function extractFilesFromImage(file: File): Promise<FileEntry[]> {
           isHidden: false,
           isSpoofed: false,
           timestamps: { created: now, modified: now, accessed: now },
-          magicBytes: sig.pattern.map((b) => b.toString(16).padStart(2, '0').toUpperCase()).join(' '),
+          magicBytes: formatMagicBytes(sig.pattern),
           actualType: sig.name,
           claimedType: sig.name,
         });
@@ -390,4 +390,8 @@ export function formatBytes(bytes: number): string {
 
 export function formatSector(sector: number): string {
   return sector.toLocaleString();
+}
+
+export function formatMagicBytes(pattern: number[]): string {
+  return pattern.map((b) => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
 }

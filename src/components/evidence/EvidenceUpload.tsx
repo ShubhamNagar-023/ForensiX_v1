@@ -72,17 +72,39 @@ export default function EvidenceUpload({ onClose }: Props) {
             message: `Partition detection complete: ${partitions.length} partition(s) found`,
           });
 
-          // Extract files from the disk image
+          // Extract files from the disk image and store them
+          addLog({
+            level: 'INFO',
+            category: 'Analysis',
+            message: `Carving files from disk image...`,
+          });
+          
           const extractedFiles = await extractFilesFromImage(file);
           
+          addLog({
+            level: 'INFO',
+            category: 'Analysis',
+            message: `File carving complete: ${extractedFiles.length} file(s) found`,
+          });
+          
           // Assign extracted files to appropriate partitions
+          // Note: File carving identifies file signatures and estimates sizes but doesn't
+          // extract full file data from unallocated space. Full file extraction would require
+          // implementing filesystem parsers (NTFS, FAT32, etc.) which is beyond the scope
+          // of this client-side application. For production use, consider integrating with
+          // forensic libraries like The Sleuth Kit for complete file recovery.
           if (partitions.length > 0 && extractedFiles.length > 0) {
             partitions[0].files = extractedFiles;
-            addLog({
-              level: 'INFO',
-              category: 'Analysis',
-              message: `File carving complete: ${extractedFiles.length} file(s) recovered`,
-            });
+            
+            // Check for potentially spoofed files based on extension mismatch
+            const spoofedFiles = extractedFiles.filter(f => f.isSpoofed);
+            if (spoofedFiles.length > 0) {
+              addLog({
+                level: 'CRITICAL',
+                category: 'Spoofing',
+                message: `Potential file spoofing detected: ${spoofedFiles.length} file signature(s) with suspicious patterns`,
+              });
+            }
           }
 
           // Check for hidden partitions
