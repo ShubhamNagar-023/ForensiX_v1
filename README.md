@@ -55,14 +55,17 @@ npm run dev
 npm run build
 ```
 
-## Demo Data
+## Usage
 
-After creating a case, click **"Load Demo Evidence"** on the Case Dashboard to load a simulated SanDisk USB drive image with:
-- 18 files across 3 partitions (including a hidden FAT16 partition)
-- 2 spoofed files (PE executable disguised as PDF, ZIP disguised as JPEG)
-- 4 deleted files (including Windows Event Logs suggesting evidence tampering)
-- 4 hidden files (SSH keys, exfiltration scripts, autorun)
-- Pre-computed hashes, strings, and analysis results
+1. Create a new forensic case with case details (investigator, case number, priority)
+2. Upload disk images (.img, .dd, .raw, .e01) or individual files via drag-and-drop
+3. The application will automatically:
+   - Parse MBR partition tables
+   - Detect filesystem signatures (NTFS, FAT32, FAT16, exFAT, EXT)
+   - Extract and carve files from disk images
+   - Identify hidden partitions and suspicious sectors
+4. Analyze extracted files for spoofing, deleted content, and security risks
+5. Generate comprehensive forensic reports with findings
 
 ## Tech Stack
 

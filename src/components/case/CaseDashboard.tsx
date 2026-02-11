@@ -1,12 +1,11 @@
 import { useCaseStore } from '../../stores/caseStore';
-import { generateDemoEvidence } from '../../utils/demoData';
 import {
   HardDrive, FileText, Clock, Shield, AlertTriangle, Bookmark,
-  Users, Calendar, Hash, Activity, TrendingUp, Eye, Database
+  Users, Calendar, Hash, Activity, TrendingUp, Eye
 } from 'lucide-react';
 
 export default function CaseDashboard() {
-  const { activeCase, ciaAssessment, addEvidence, addLog } = useCaseStore();
+  const { activeCase, ciaAssessment } = useCaseStore();
   if (!activeCase) return null;
 
   const meta = activeCase.metadata;
@@ -51,33 +50,6 @@ export default function CaseDashboard() {
           </div>
         ))}
       </div>
-
-      {/* Load Demo Data Button */}
-      {activeCase.evidence.length === 0 && (
-        <div className="card-cyber p-4 mb-6 text-center glow-cyan">
-          <Database className="w-8 h-8 mx-auto mb-2 text-accent-cyan" />
-          <h3 className="text-sm font-display font-semibold text-accent-cyan mb-1">Quick Start Demo</h3>
-          <p className="text-xs text-text-secondary mb-3">
-            Load a simulated SanDisk USB drive image with realistic forensic data including
-            spoofed files, deleted logs, hidden partitions, and suspicious artifacts.
-          </p>
-          <button
-            className="btn-cyber filled"
-            onClick={() => {
-              const demoEvidence = generateDemoEvidence();
-              addEvidence(demoEvidence);
-              addLog({ level: 'INFO', category: 'Evidence', message: `Demo evidence loaded: ${demoEvidence.name}` });
-              addLog({ level: 'INFO', category: 'Analysis', message: `Partition detection complete: ${demoEvidence.partitions?.length} partitions found` });
-              addLog({ level: 'WARNING', category: 'Analysis', message: 'Hidden partition detected at sector 32 (FAT16, 8 MB)' });
-              addLog({ level: 'CRITICAL', category: 'Spoofing', message: 'File spoofing detected: invoice_march.pdf is a PE executable!' });
-              addLog({ level: 'WARNING', category: 'Analysis', message: 'Deleted Windows Event Logs detected (Security.evtx, System.evtx)' });
-              addLog({ level: 'INFO', category: 'Analysis', message: `File extraction complete: ${demoEvidence.partitions?.reduce((a, p) => a + p.files.length, 0)} files extracted` });
-            }}
-          >
-            <Database className="w-4 h-4 inline mr-1" /> Load Demo Evidence
-          </button>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Case Details */}

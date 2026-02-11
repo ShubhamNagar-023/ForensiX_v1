@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
 import { Upload, HardDrive, File, X } from 'lucide-react';
 import { useCaseStore } from '../../stores/caseStore';
+import { storeFile } from '../../utils/fileStorage';
+import { parseMBR, extractFilesFromImage } from '../../utils/diskAnalysis';
 
 interface Props {
   onClose: () => void;
@@ -36,43 +38,114 @@ export default function EvidenceUpload({ onClose }: Props) {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     for (const file of files) {
       const ext = file.name.split('.').pop()?.toLowerCase() || '';
-      const isDiskImage = ['img', 'dd', 'raw', 'e01', 'iso'].includes(ext);
+      const isDiskImage = ['img', 'dd', 'raw', 'e01', 'iso', 'bin'].includes(ext);
+      const evidenceId = Math.random().toString(36).substring(2) + Date.now().toString(36);
       
-      addEvidence({
-        id: Math.random().toString(36).substring(2) + Date.now().toString(36),
-        name: file.name,
-        type: isDiskImage ? 'disk-image' : 'file',
-        path: `/evidence/${isDiskImage ? 'disk-images' : 'files'}/${file.name}`,
-        size: file.size,
-        dateAdded: new Date().toISOString(),
-        analysisStatus: 'pending',
-      });
+      try {
+        // Store the actual file data in IndexedDB
+        await storeFile(file, evidenceId);
 
-      addLog({
-        level: 'INFO',
-        category: 'Evidence',
-        message: `Evidence added: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
-      });
+        addLog({
+          level: 'INFO',
+          category: 'Evidence',
+          message: `Evidence added: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
+        });
 
-      // Store file reference in sessionStorage for later analysis
-      // In production, this would go to IndexedDB or a backend
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          sessionStorage.setItem(`evidence-${file.name}`, JSON.stringify({
+        // For disk images, parse partitions and extract files
+        if (isDiskImage) {
+          addLog({
+            level: 'INFO',
+            category: 'Analysis',
+            message: `Processing disk image: ${file.name}`,
+          });
+
+          // Read the file to analyze partitions
+          const buffer = await file.arrayBuffer();
+          const partitions = parseMBR(buffer);
+          
+          addLog({
+            level: 'INFO',
+            category: 'Analysis',
+            message: `Partition detection complete: ${partitions.length} partition(s) found`,
+          });
+
+          // Extract files from the disk image and store them
+          addLog({
+            level: 'INFO',
+            category: 'Analysis',
+            message: `Carving files from disk image...`,
+          });
+          
+          const extractedFiles = await extractFilesFromImage(file);
+          
+          addLog({
+            level: 'INFO',
+            category: 'Analysis',
+            message: `File carving complete: ${extractedFiles.length} file(s) found`,
+          });
+          
+          // Assign extracted files to appropriate partitions
+          // Note: File carving identifies file signatures and estimates sizes but doesn't
+          // extract full file data from unallocated space. Full file extraction would require
+          // implementing filesystem parsers (NTFS, FAT32, etc.) which is beyond the scope
+          // of this client-side application. For production use, consider integrating with
+          // forensic libraries like The Sleuth Kit for complete file recovery.
+          if (partitions.length > 0 && extractedFiles.length > 0) {
+            partitions[0].files = extractedFiles;
+            
+            // Check for potentially spoofed files based on extension mismatch
+            const spoofedFiles = extractedFiles.filter(f => f.isSpoofed);
+            if (spoofedFiles.length > 0) {
+              addLog({
+                level: 'CRITICAL',
+                category: 'Spoofing',
+                message: `Potential file spoofing detected: ${spoofedFiles.length} file signature(s) with suspicious patterns`,
+              });
+            }
+          }
+
+          // Check for hidden partitions
+          const hiddenPartitions = partitions.filter(p => p.status === 'hidden');
+          if (hiddenPartitions.length > 0) {
+            addLog({
+              level: 'WARNING',
+              category: 'Analysis',
+              message: `Hidden partition(s) detected: ${hiddenPartitions.map(p => `${p.filesystemType} at sector ${p.startSector}`).join(', ')}`,
+            });
+          }
+
+          addEvidence({
+            id: evidenceId,
             name: file.name,
+            type: 'disk-image',
+            path: `/evidence/disk-images/${file.name}`,
             size: file.size,
-            type: file.type,
-            lastModified: file.lastModified,
-          }));
-        } catch {
-          // sessionStorage might be full for large files - that's ok
+            dateAdded: new Date().toISOString(),
+            partitions,
+            analysisStatus: 'complete',
+          });
+        } else {
+          // For regular files, just add the evidence
+          addEvidence({
+            id: evidenceId,
+            name: file.name,
+            type: 'file',
+            path: `/evidence/files/${file.name}`,
+            size: file.size,
+            dateAdded: new Date().toISOString(),
+            analysisStatus: 'pending',
+          });
         }
-      };
-      reader.readAsArrayBuffer(file.slice(0, 1024)); // Just read first 1KB for metadata
+      } catch (error) {
+        addLog({
+          level: 'ERROR',
+          category: 'Evidence',
+          message: `Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        });
+      }
     }
     onClose();
   };
