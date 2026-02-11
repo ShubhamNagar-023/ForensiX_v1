@@ -1,73 +1,75 @@
-# React + TypeScript + Vite
+# ForensicX - Professional Disk Forensics Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A production-grade web-based disk forensics application built with React, TypeScript, and Tailwind CSS. ForensicX provides comprehensive tools for digital forensic investigation including disk image analysis, file spoofing detection, hidden sector scanning, and security assessment.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Core Architecture
+- **Case Management** - Create, open, switch between forensic cases with full metadata (investigator, custodian, team, tags, priority)
+- **3-Panel Resizable Layout** - Navigator (left), Main Content (center), Details (right) with keyboard shortcuts
+- **Evidence Management** - Drag-and-drop file upload, disk image support (.img, .dd, .raw, .e01)
+- **Persistent State** - Cases persist in browser localStorage via Zustand
 
-## React Compiler
+### Disk Image Analysis
+- **MBR/GPT Partition Parsing** - Detects partition types, filesystem signatures, hidden partitions
+- **Filesystem Detection** - NTFS, FAT32, FAT16, exFAT, EXT2/3/4 signature identification
+- **File Carving** - Extracts embedded files from disk images using magic byte signatures
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Static File Analysis
+- **500+ File Signatures** - Magic byte identification for executables, archives, documents, images, media, databases
+- **File Spoofing Detection** - Identifies files with mismatched extensions (e.g., .exe disguised as .pdf)
+- **Risk Assessment** - CRITICAL/HIGH/MEDIUM/LOW risk levels with detailed indicators
 
-## Expanding the ESLint configuration
+### Hidden Sector Analysis
+- **Sector Scanning** - Quick, Standard, and Paranoid scan modes
+- **Entropy Analysis** - Detects encrypted/compressed regions via Shannon entropy
+- **Sector Map Visualization** - Visual grid showing hidden, encrypted, and suspicious sectors
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Analysis Tools
+- **Hex Viewer** - Offset navigation, ASCII display, color-coded byte visualization
+- **String Extraction** - ASCII/Unicode strings, URLs, emails, IP addresses
+- **Keyword Search** - Full-text search with regex support across all extracted data
+- **Timeline Analysis** - Interactive charts (Recharts) with event filtering and CSV export
+- **Hash Verification** - MD5, SHA256, SHA1 calculation
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Security Assessment
+- **CIA Triad Assessment** - Confidentiality, Integrity, Availability scoring with gauge visualizations
+- **MITRE ATT&CK Mapping** - Maps artifacts to MITRE tactics and techniques with evidence chains
+- **Risk Scoring** - Overall risk assessment with actionable recommendations
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Reporting & Export
+- **Forensic Report Generator** - Configurable sections, text and JSON export formats
+- **Analysis Logging** - Severity-based log system (INFO/WARNING/ERROR/CRITICAL) with filtering and export
+- **Bookmark & Notes** - Bookmark files and add investigator notes with timestamps
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Demo Data
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+After creating a case, click **"Load Demo Evidence"** on the Case Dashboard to load a simulated SanDisk USB drive image with:
+- 18 files across 3 partitions (including a hidden FAT16 partition)
+- 2 spoofed files (PE executable disguised as PDF, ZIP disguised as JPEG)
+- 4 deleted files (including Windows Event Logs suggesting evidence tampering)
+- 4 hidden files (SSH keys, exfiltration scripts, autorun)
+- Pre-computed hashes, strings, and analysis results
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Tech Stack
+
+- **React 19** + **TypeScript** - Type-safe component architecture
+- **Vite** - Fast build tool with HMR
+- **Tailwind CSS 4** - Utility-first CSS with custom cyber theme
+- **Zustand** - Lightweight state management with persistence
+- **Recharts** - Chart visualizations for timeline analysis
+- **Lucide React** - Icon library
+- **CryptoJS** - Hash calculation (MD5, SHA256, SHA1)
