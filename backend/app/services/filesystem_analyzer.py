@@ -81,7 +81,7 @@ class FilesystemAnalyzer:
                         fs_info, sub_dir, new_path, files,
                         max_files, include_deleted, include_directories, depth + 1
                     )
-                except:
+                except Exception:
                     pass
                 continue
             
@@ -99,7 +99,7 @@ class FilesystemAnalyzer:
                         fs_info, sub_dir, new_path, files,
                         max_files, include_deleted, include_directories, depth + 1
                     )
-                except:
+                except Exception:
                     pass
     
     def _extract_file_metadata(self, entry, current_path: str, is_deleted: bool) -> Optional[FileMetadata]:
@@ -217,7 +217,7 @@ class FilesystemAnalyzer:
             perms.append('x' if mode & 0o001 else '-')
             
             return ''.join(perms)
-        except:
+        except Exception:
             return None
     
     def read_file(self, partition_id: str, file_path: str, inode: Optional[int] = None) -> bytes:

@@ -105,7 +105,7 @@ export default function EvidenceUpload({ onClose }: Props) {
                   message: `Extracted ${fileList.length} files from partition ${part.number} (${part.filesystem_type})`,
                 });
 
-                // Convert backend file metadata to frontend format
+                # Convert backend file metadata to frontend format
                 const convertedFiles = fileList.map((f) => ({
                   id: f.id,
                   name: f.name,
@@ -115,7 +115,7 @@ export default function EvidenceUpload({ onClose }: Props) {
                   extension: f.extension,
                   isDeleted: f.is_deleted,
                   isHidden: f.is_hidden,
-                  isSpoofed: false, // Will be determined by file analysis
+                  isSpoofed: false, // TODO: Implement spoofing detection via backend API
                   timestamps: {
                     created: f.timestamps.created || new Date().toISOString(),
                     modified: f.timestamps.modified || new Date().toISOString(),

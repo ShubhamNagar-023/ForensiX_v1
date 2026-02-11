@@ -3,7 +3,6 @@
 Example script demonstrating real forensics with pytsk3 and libewf
 This shows how the backend processes disk images
 """
-import sys
 import os
 
 def example_raw_image_analysis():
