@@ -1,19 +1,30 @@
-# ForensicX - Professional Disk Forensics Platform
+# ForensicX - Real Professional Disk Forensics Platform
 
-A production-grade web-based disk forensics application built with React, TypeScript, and Tailwind CSS. ForensicX provides comprehensive tools for digital forensic investigation including disk image analysis, file spoofing detection, hidden sector scanning, and security assessment.
+A **real production-grade** disk forensics application with Python backend using **pytsk3** (The Sleuth Kit) and **libewf** for E01 support. The application provides genuine forensic capabilities including disk image analysis, filesystem parsing, file extraction, and comprehensive metadata analysis.
+
+## Architecture
+
+- **Frontend**: React + TypeScript + Tailwind CSS (Web UI)
+- **Backend**: Python FastAPI with pytsk3 and libewf (Real forensics engine)
+- **Real Features**: Actual E01 support, filesystem parsing, deleted file recovery
 
 ## Features
 
-### Core Architecture
+### Real Forensics Backend (Python + pytsk3 + libewf)
+- **E01 Support** - Real Expert Witness Format support using libewf
+- **Raw Image Support** - DD, IMG, RAW disk image formats
+- **Filesystem Analysis** - NTFS, FAT12/16/32, exFAT, EXT2/3/4, HFS using The Sleuth Kit
+- **MBR/GPT Parsing** - Real partition table parsing via pytsk3
+- **File Extraction** - Extract files with full metadata (timestamps, permissions, ownership)
+- **Deleted File Recovery** - Access deleted files from unallocated space
+- **Real Hash Calculation** - MD5, SHA1, SHA256 from actual file contents
+- **Inode Analysis** - Direct filesystem metadata access
+
+### Frontend Features
 - **Case Management** - Create, open, switch between forensic cases with full metadata (investigator, custodian, team, tags, priority)
 - **3-Panel Resizable Layout** - Navigator (left), Main Content (center), Details (right) with keyboard shortcuts
-- **Evidence Management** - Drag-and-drop file upload, disk image support (.img, .dd, .raw, .e01)
+- **Evidence Management** - Upload disk images to backend for real analysis
 - **Persistent State** - Cases persist in browser localStorage via Zustand
-
-### Disk Image Analysis
-- **MBR/GPT Partition Parsing** - Detects partition types, filesystem signatures, hidden partitions
-- **Filesystem Detection** - NTFS, FAT32, FAT16, exFAT, EXT2/3/4 signature identification
-- **File Carving** - Extracts embedded files from disk images using magic byte signatures
 
 ### Static File Analysis
 - **500+ File Signatures** - Magic byte identification for executables, archives, documents, images, media, databases
@@ -44,6 +55,23 @@ A production-grade web-based disk forensics application built with React, TypeSc
 
 ## Quick Start
 
+### Backend Setup (Python)
+```bash
+# Install system dependencies (Ubuntu/Debian)
+sudo apt-get install -y build-essential python3-dev libewf-dev
+
+# Setup Python backend
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Start backend server
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# Or use: ./start.sh
+```
+
+### Frontend Setup (TypeScript/React)
 ```bash
 # Install dependencies
 npm install
@@ -55,24 +83,45 @@ npm run dev
 npm run build
 ```
 
+### Docker Setup (Recommended)
+```bash
+# Start both frontend and backend
+docker-compose up -d
+
+# Backend will be available at http://localhost:8000
+# Frontend will be available at http://localhost:5173
+```
+
 ## Usage
 
-1. Create a new forensic case with case details (investigator, case number, priority)
-2. Upload disk images (.img, .dd, .raw, .e01) or individual files via drag-and-drop
-3. The application will automatically:
-   - Parse MBR partition tables
-   - Detect filesystem signatures (NTFS, FAT32, FAT16, exFAT, EXT)
-   - Extract and carve files from disk images
-   - Identify hidden partitions and suspicious sectors
-4. Analyze extracted files for spoofing, deleted content, and security risks
-5. Generate comprehensive forensic reports with findings
+1. **Start the backend** (Python FastAPI server with pytsk3/libewf)
+2. **Start the frontend** (React development server)
+3. Create a new forensic case with case details (investigator, case number, priority)
+4. Upload disk images (.img, .dd, .raw, .e01) - **images are processed by real pytsk3 backend**
+5. The backend will:
+   - Open E01 files using libewf
+   - Parse MBR/GPT partition tables using pytsk3
+   - Detect real filesystem signatures (NTFS, FAT, EXT, etc.)
+   - Extract files with actual metadata (timestamps, permissions, ownership)
+   - Access deleted files from unallocated space
+   - Calculate real MD5/SHA1/SHA256 hashes
+6. Analyze extracted files for spoofing, deleted content, and security risks
+7. Generate comprehensive forensic reports with findings
 
 ## Tech Stack
 
+### Backend (Real Forensics Engine)
+- **Python 3.11+** - Backend runtime
+- **FastAPI** - Modern async web framework
+- **pytsk3** - Python bindings for The Sleuth Kit (filesystem analysis)
+- **libewf-python** - Expert Witness Format (E01) support
+- **Uvicorn** - ASGI server
+
+### Frontend
 - **React 19** + **TypeScript** - Type-safe component architecture
 - **Vite** - Fast build tool with HMR
 - **Tailwind CSS 4** - Utility-first CSS with custom cyber theme
 - **Zustand** - Lightweight state management with persistence
 - **Recharts** - Chart visualizations for timeline analysis
 - **Lucide React** - Icon library
-- **CryptoJS** - Hash calculation (MD5, SHA256, SHA1)
+- **CryptoJS** - Hash calculation (frontend fallback)
