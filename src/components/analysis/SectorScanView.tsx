@@ -1,74 +1,93 @@
 import { useState } from 'react';
 import { useCaseStore } from '../../stores/caseStore';
 import { Scan, AlertTriangle, Shield, HardDrive, Lock, Download } from 'lucide-react';
-import { formatBytes } from '../../utils/diskAnalysis';
+import { formatBytes, performSectorScan } from '../../utils/diskAnalysis';
+import { getFileData } from '../../utils/fileStorage';
 
 export default function SectorScanView() {
-  const { sectorScanResult, setSectorScanResult, addLog } = useCaseStore();
+  const { sectorScanResult, setSectorScanResult, addLog, activeCase } = useCaseStore();
   const [scanMode, setScanMode] = useState<'quick' | 'standard' | 'paranoid'>('standard');
+  const [scanning, setScanning] = useState(false);
 
-  const runDemoScan = () => {
-    // Generate demo sector scan results
-    const result = {
-      hiddenPartitions: [
-        {
-          sector: 32,
-          offset: 16384,
-          type: 'FAT16',
-          confidence: 'HIGH' as const,
-          entropy: 4.2,
-          signature: 'FAT16',
-          status: 'POTENTIAL_HIDDEN_PARTITION' as const,
-        },
-        {
-          sector: 2048,
-          offset: 1048576,
-          type: 'NTFS',
-          confidence: 'MEDIUM' as const,
-          entropy: 5.8,
-          signature: 'NTFS',
-          status: 'POTENTIAL_HIDDEN_PARTITION' as const,
-        },
-      ],
-      filesystemSignatures: [
-        {
-          sector: 0,
-          offset: 0,
-          type: 'NTFS',
-          confidence: 'HIGH' as const,
-          status: 'POTENTIAL_HIDDEN_PARTITION' as const,
-        },
-      ],
-      suspiciousSectors: [
-        {
-          sector: 128,
-          offset: 65536,
-          type: 'Unknown Data',
-          confidence: 'LOW' as const,
-          entropy: 3.5,
-          status: 'CONTAINS_DATA' as const,
-        },
-      ],
-      encryptedRegions: [
-        {
-          sector: 256,
-          offset: 131072,
-          type: 'Encrypted/Compressed',
-          confidence: 'MEDIUM' as const,
-          entropy: 7.8,
-          status: 'ENCRYPTED_OR_COMPRESSED' as const,
-        },
-      ],
-      scanProgress: 100,
-      totalSectors: 1048576,
-    };
+  const runScan = async () => {
+    if (!activeCase || activeCase.evidence.length === 0) {
+      addLog({
+        level: 'WARNING',
+        category: 'Sector Scan',
+        message: 'No evidence loaded. Please add a disk image first.',
+      });
+      return;
+    }
 
-    setSectorScanResult(result);
+    // Find the first disk image
+    const diskImage = activeCase.evidence.find(e => e.type === 'disk-image');
+    if (!diskImage) {
+      addLog({
+        level: 'WARNING',
+        category: 'Sector Scan',
+        message: 'No disk image found. Sector scan requires a disk image file.',
+      });
+      return;
+    }
+
+    setScanning(true);
     addLog({
       level: 'INFO',
       category: 'Sector Scan',
-      message: `${scanMode} sector scan complete: ${result.hiddenPartitions.length} hidden partitions, ${result.encryptedRegions.length} encrypted regions`,
+      message: `Starting ${scanMode} sector scan on ${diskImage.name}...`,
     });
+
+    try {
+      // Load the disk image data
+      const fileData = await getFileData(diskImage.id);
+      if (!fileData) {
+        throw new Error('Failed to load disk image data');
+      }
+
+      // Convert ArrayBuffer back to File for the scan function
+      const file = new File([fileData], diskImage.name, { type: 'application/octet-stream' });
+
+      // Perform the actual sector scan with progress callback
+      const result = await performSectorScan(file, scanMode, (progress, message) => {
+        addLog({
+          level: 'INFO',
+          category: 'Sector Scan',
+          message: `[${progress.toFixed(0)}%] ${message}`,
+        });
+      });
+      
+      setSectorScanResult(result);
+
+      addLog({
+        level: 'INFO',
+        category: 'Sector Scan',
+        message: `${scanMode} sector scan complete: ${result.hiddenPartitions.length} hidden partition(s), ${result.encryptedRegions.length} encrypted region(s)`,
+      });
+
+      if (result.hiddenPartitions.length > 0) {
+        addLog({
+          level: 'WARNING',
+          category: 'Sector Scan',
+          message: `Hidden partitions detected at sectors: ${result.hiddenPartitions.map((p) => p.sector).join(', ')}`,
+        });
+      }
+
+      if (result.encryptedRegions.length > 0) {
+        addLog({
+          level: 'WARNING',
+          category: 'Sector Scan',
+          message: `Encrypted/compressed regions detected with high entropy (>7.5)`,
+        });
+      }
+    } catch (error) {
+      addLog({
+        level: 'ERROR',
+        category: 'Sector Scan',
+        message: `Scan failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      });
+    } finally {
+      setScanning(false);
+    }
   };
 
   const exportResults = () => {
@@ -100,8 +119,12 @@ export default function SectorScanView() {
             <option value="standard">Standard Scan</option>
             <option value="paranoid">Paranoid Scan</option>
           </select>
-          <button className="btn-cyber text-xs filled" onClick={runDemoScan}>
-            Run Scan
+          <button 
+            className="btn-cyber text-xs filled" 
+            onClick={runScan}
+            disabled={scanning}
+          >
+            {scanning ? 'Scanning...' : 'Run Scan'}
           </button>
           {sectorScanResult && (
             <button className="btn-cyber text-xs" onClick={exportResults}>
@@ -140,7 +163,7 @@ export default function SectorScanView() {
               ))}
             </div>
 
-            <button className="btn-cyber filled" onClick={runDemoScan}>
+            <button className="btn-cyber filled" onClick={runScan}>
               Start {scanMode.charAt(0).toUpperCase() + scanMode.slice(1)} Scan
             </button>
           </div>

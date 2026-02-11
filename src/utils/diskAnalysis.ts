@@ -283,13 +283,13 @@ export async function performSectorScan(
   return result;
 }
 
-// Generate simulated file entries from a disk image for demo purposes
+// Extract files from a disk image using file carving
 export async function extractFilesFromImage(file: File): Promise<FileEntry[]> {
   const files: FileEntry[] = [];
   const now = new Date().toISOString();
   
-  // Read the first 64KB to analyze
-  const headerSize = Math.min(65536, file.size);
+  // Read the first 1MB to analyze for file signatures
+  const headerSize = Math.min(1024 * 1024, file.size);
   const headerSlice = file.slice(0, headerSize);
   const headerBuffer = await headerSlice.arrayBuffer();
   const headerData = new Uint8Array(headerBuffer);
@@ -305,10 +305,13 @@ export async function extractFilesFromImage(file: File): Promise<FileEntry[]> {
     { name: 'GIF Image', ext: '.gif', pattern: [0x47, 0x49, 0x46, 0x38], mime: 'image/gif' },
     { name: 'RAR Archive', ext: '.rar', pattern: [0x52, 0x61, 0x72, 0x21], mime: 'application/x-rar' },
     { name: 'SQLite DB', ext: '.db', pattern: [0x53, 0x51, 0x4C, 0x69, 0x74, 0x65], mime: 'application/x-sqlite3' },
+    { name: 'GZIP Archive', ext: '.gz', pattern: [0x1F, 0x8B], mime: 'application/gzip' },
   ];
 
   let fileIdx = 0;
-  for (let offset = 0; offset < headerData.length - 8; offset++) {
+  const maxFiles = 100; // Limit to prevent excessive carving
+  
+  for (let offset = 0; offset < headerData.length - 8 && fileIdx < maxFiles; offset++) {
     for (const sig of FILE_SIGS) {
       let match = true;
       for (let j = 0; j < sig.pattern.length; j++) {
@@ -319,22 +322,57 @@ export async function extractFilesFromImage(file: File): Promise<FileEntry[]> {
       }
       if (match) {
         fileIdx++;
+        
+        // Estimate file size by searching for next file signature or end of data
+        let estimatedSize = 0;
+        const maxScanAhead = Math.min(10 * 1024 * 1024, headerData.length - offset); // Max 10MB per file
+        
+        for (let i = offset + sig.pattern.length; i < offset + maxScanAhead; i++) {
+          // Simple heuristic: look for another file signature
+          let foundNext = false;
+          for (const nextSig of FILE_SIGS) {
+            if (i + nextSig.pattern.length <= headerData.length) {
+              let nextMatch = true;
+              for (let k = 0; k < nextSig.pattern.length; k++) {
+                if (headerData[i + k] !== nextSig.pattern[k]) {
+                  nextMatch = false;
+                  break;
+                }
+              }
+              if (nextMatch) {
+                foundNext = true;
+                break;
+              }
+            }
+          }
+          if (foundNext) {
+            estimatedSize = i - offset;
+            break;
+          }
+        }
+        
+        if (estimatedSize === 0) {
+          estimatedSize = Math.min(1024 * 1024, headerData.length - offset); // Default to 1MB or remaining data
+        }
+        
         files.push({
-          id: `file-${fileIdx}`,
-          name: `recovered_${fileIdx}${sig.ext}`,
-          path: `/evidence/carved-files/recovered_${fileIdx}${sig.ext}`,
-          size: Math.floor(Math.random() * 1000000) + 1024,
+          id: `carved-${fileIdx}`,
+          name: `carved_${fileIdx}${sig.ext}`,
+          path: `/carved/carved_${fileIdx}${sig.ext}`,
+          size: estimatedSize,
           type: 'file',
           extension: sig.ext,
-          isDeleted: offset > headerData.length / 2,
+          isDeleted: offset > headerData.length / 4, // Files in latter part are more likely deleted
           isHidden: false,
           isSpoofed: false,
           timestamps: { created: now, modified: now, accessed: now },
-          magicBytes: sig.pattern.map((b) => b.toString(16).padStart(2, '0')).join(' '),
+          magicBytes: sig.pattern.map((b) => b.toString(16).padStart(2, '0').toUpperCase()).join(' '),
           actualType: sig.name,
           claimedType: sig.name,
         });
-        offset += sig.pattern.length;
+        
+        // Skip ahead to avoid duplicate detections
+        offset += sig.pattern.length + 100;
         break;
       }
     }

@@ -1,27 +1,92 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useCaseStore } from '../../stores/caseStore';
+import { getFileData } from '../../utils/fileStorage';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function HexViewer() {
-  const { selectedFileEntry } = useCaseStore();
+  const { selectedFileEntry, activeCase } = useCaseStore();
   const [offset, setOffset] = useState(0);
   const [jumpTo, setJumpTo] = useState('');
+  const [hexData, setHexData] = useState<Uint8Array>(new Uint8Array(0));
+  const [currentFileId, setCurrentFileId] = useState<string | null>(null);
   const BYTES_PER_ROW = 16;
   const VISIBLE_ROWS = 32;
 
-  // Generate demo hex data based on file magic bytes or random data
-  const hexData = useMemo(() => {
-    const data = new Uint8Array(4096);
-    if (selectedFileEntry?.magicBytes) {
-      const bytes = selectedFileEntry.magicBytes.split(' ').map(b => parseInt(b, 16));
-      bytes.forEach((b, i) => { data[i] = b; });
+  // Reset offset when selectedFileEntry changes
+  if (selectedFileEntry?.id !== currentFileId) {
+    setCurrentFileId(selectedFileEntry?.id || null);
+    setOffset(0);
+  }
+
+  // Load actual file data from IndexedDB when file is selected
+  useEffect(() => {
+    let cancelled = false;
+    
+    async function loadFileData() {
+      if (!selectedFileEntry || !activeCase) {
+        if (!cancelled) setHexData(new Uint8Array(0));
+        return;
+      }
+
+      // Find the evidence item containing this file
+      let evidenceId: string | null = null;
+      for (const evidence of activeCase.evidence) {
+        if (evidence.partitions) {
+          for (const partition of evidence.partitions) {
+            if (partition.files.some(f => f.id === selectedFileEntry.id)) {
+              evidenceId = evidence.id;
+              break;
+            }
+          }
+        }
+        if (evidenceId) break;
+      }
+
+      if (!evidenceId) {
+        // If not found in partitions, this might be a standalone file
+        const standalone = activeCase.evidence.find(e => e.name === selectedFileEntry.name);
+        if (standalone) evidenceId = standalone.id;
+      }
+
+      if (evidenceId) {
+        try {
+          const fileData = await getFileData(evidenceId);
+          if (fileData && !cancelled) {
+            // For large files, only load the first 1MB for hex viewing
+            const maxSize = 1024 * 1024; // 1MB
+            const data = new Uint8Array(fileData.slice(0, Math.min(fileData.byteLength, maxSize)));
+            setHexData(data);
+          } else if (!cancelled) {
+            // Fallback: generate minimal data from magic bytes if file data not available
+            generateFallbackData();
+          }
+        } catch (error) {
+          console.error('Failed to load file data:', error);
+          if (!cancelled) generateFallbackData();
+        }
+      } else if (!cancelled) {
+        generateFallbackData();
+      }
     }
-    // Fill rest with pseudo-random data  
-    for (let i = selectedFileEntry?.magicBytes ? selectedFileEntry.magicBytes.split(' ').length : 0; i < data.length; i++) {
-      data[i] = Math.floor(Math.random() * 256);
+
+    function generateFallbackData() {
+      // Generate minimal fallback data from magic bytes
+      if (selectedFileEntry?.magicBytes) {
+        const bytes = selectedFileEntry.magicBytes.split(' ').map(b => parseInt(b, 16));
+        const data = new Uint8Array(Math.max(4096, bytes.length));
+        bytes.forEach((b, i) => { data[i] = b; });
+        setHexData(data);
+      } else {
+        setHexData(new Uint8Array(4096));
+      }
     }
-    return data;
-  }, [selectedFileEntry]);
+
+    loadFileData();
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedFileEntry, activeCase]);
 
   const totalRows = Math.ceil(hexData.length / BYTES_PER_ROW);
   const startRow = Math.floor(offset / BYTES_PER_ROW);
