@@ -41,12 +41,12 @@ backend/.env
 .env.*.local
 
 # Forensics data
-uploads/
-evidence/
-*.e01
-*.E01
-*.img
-*.dd
-*.raw
-*.vmdk
+/uploads/
+/evidence/
+/*.e01
+/*.E01
+/*.img
+/*.dd
+/*.raw
+/*.vmdk
 
