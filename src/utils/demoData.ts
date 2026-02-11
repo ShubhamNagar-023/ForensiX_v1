@@ -253,11 +253,11 @@ export function generateDemoEvidence(): EvidenceItem {
         files.find(f => f.name === 'autorun.inf')!,
         {
           id: generateId(), name: 'U3Launcher.exe', path: '/U3System/U3Launcher.exe',
-          size: 245760, type: 'file', extension: '.exe', isDeleted: false, isHidden: false, isSpoofed: false,
+          size: 245760, type: 'file' as const, extension: '.exe', isDeleted: false, isHidden: false, isSpoofed: false,
           timestamps: { created: '2023-06-15T00:00:00Z', modified: '2023-06-15T00:00:00Z', accessed: '2024-02-10T08:30:00Z' },
           magicBytes: '4D 5A 90 00', actualType: 'PE Executable (Windows)', claimedType: 'PE Executable',
         },
-      ].filter(Boolean),
+      ].filter(Boolean) as FileEntry[],
     },
   ];
 
