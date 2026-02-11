@@ -22,3 +22,31 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/**/*.pyd
+backend/.Python
+backend/pip-log.txt
+backend/pip-delete-this-directory.txt
+backend/.env
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Forensics data
+/uploads/
+/evidence/
+/*.e01
+/*.E01
+/*.img
+/*.dd
+/*.raw
+/*.vmdk
+
