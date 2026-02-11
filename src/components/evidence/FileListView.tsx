@@ -148,7 +148,7 @@ export default function FileListView() {
                       <span className={`${file.isSpoofed ? 'text-accent-red' : file.isDeleted ? 'text-accent-yellow' : 'text-text-primary'}`}>
                         {file.name}
                       </span>
-                      {file.isSpoofed && <AlertTriangle className="w-3 h-3 text-accent-red" title="Spoofed file" />}
+                      {file.isSpoofed && <AlertTriangle className="w-3 h-3 text-accent-red" />}
                     </div>
                   </td>
                   <td className="p-2 text-text-secondary">{formatBytes(file.size)}</td>

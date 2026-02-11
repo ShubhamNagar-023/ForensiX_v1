@@ -4,7 +4,7 @@ import { Scan, AlertTriangle, Shield, HardDrive, Lock, Download } from 'lucide-r
 import { formatBytes } from '../../utils/diskAnalysis';
 
 export default function SectorScanView() {
-  const { sectorScanResult, setSectorScanResult, addLog, activeCase } = useCaseStore();
+  const { sectorScanResult, setSectorScanResult, addLog } = useCaseStore();
   const [scanMode, setScanMode] = useState<'quick' | 'standard' | 'paranoid'>('standard');
 
   const runDemoScan = () => {
@@ -81,13 +81,6 @@ export default function SectorScanView() {
     a.download = `sector-scan-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  };
-
-  const statusColors: Record<string, string> = {
-    POTENTIAL_HIDDEN_PARTITION: '#ff0051',
-    ENCRYPTED_OR_COMPRESSED: '#ffea00',
-    CONTAINS_DATA: '#ff7800',
-    EMPTY: '#2a3441',
   };
 
   return (

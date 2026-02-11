@@ -1,7 +1,7 @@
 import { useCaseStore } from '../../stores/caseStore';
 import {
-  File, Calendar, Hash, Shield, AlertTriangle, Bookmark, BookmarkPlus,
-  StickyNote, Tag, Eye, Clock, HardDrive, Download, Play
+  File, Shield, AlertTriangle, BookmarkPlus,
+  StickyNote, Tag, Eye, Clock, Download, Play
 } from 'lucide-react';
 import { useState } from 'react';
 import { formatBytes } from '../../utils/diskAnalysis';

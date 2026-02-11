@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { useCaseStore } from '../../stores/caseStore';
 import { generateTimeline } from '../../utils/fileAnalysis';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { Clock, Download, Filter, FileText } from 'lucide-react';
-import type { FileEntry, TimelineEvent } from '../../types';
+import { Clock, Download } from 'lucide-react';
+import type { FileEntry } from '../../types';
 
 export default function TimelineView() {
   const { activeCase, timelineEvents, setTimelineEvents, selectFile, addLog } = useCaseStore();
@@ -46,9 +46,10 @@ export default function TimelineView() {
         dateMap.set(date, { date, created: 0, modified: 0, accessed: 0, deleted: 0 });
       }
       const entry = dateMap.get(date)!;
-      if (event.eventType in entry) {
-        (entry as Record<string, number>)[event.eventType]++;
-      }
+      if (event.eventType === 'created') entry.created++;
+      else if (event.eventType === 'modified') entry.modified++;
+      else if (event.eventType === 'accessed') entry.accessed++;
+      else if (event.eventType === 'deleted') entry.deleted++;
     }
     return Array.from(dateMap.values()).slice(-30); // Last 30 days
   }, [events]);

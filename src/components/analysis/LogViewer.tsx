@@ -1,6 +1,6 @@
 import { useCaseStore } from '../../stores/caseStore';
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Download, Filter, Trash2, AlertTriangle, Info, Bug, AlertCircle } from 'lucide-react';
+import { Download, Filter, Info, Bug, AlertCircle, AlertTriangle } from 'lucide-react';
 
 export default function LogViewer() {
   const { activeCase } = useCaseStore();
