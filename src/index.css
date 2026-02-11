@@ -1,0 +1,274 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #0a0e17;
+  --color-bg-secondary: #151922;
+  --color-bg-tertiary: #1a1f2e;
+  --color-accent-cyan: #00ffff;
+  --color-accent-green: #00ff41;
+  --color-accent-red: #ff0051;
+  --color-accent-yellow: #ffea00;
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #a0a0a0;
+  --color-border: #2a3441;
+  --color-border-glow: #00ffff33;
+  --font-family-display: 'Rajdhani', 'Orbitron', sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-family-body: 'Inter', 'Roboto', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background-color: #0a0e17;
+  color: #e0e0e0;
+  font-family: 'Inter', 'Roboto', sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0e17;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a3441;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a4451;
+}
+
+/* Cyber glow effects */
+.glow-cyan {
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3), 0 0 20px rgba(0, 255, 255, 0.1);
+}
+.glow-green {
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.3), 0 0 20px rgba(0, 255, 65, 0.1);
+}
+.glow-red {
+  box-shadow: 0 0 10px rgba(255, 0, 81, 0.3), 0 0 20px rgba(255, 0, 81, 0.1);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+.text-glow-green {
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+/* Panel resize handle */
+.resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.resize-handle:hover,
+.resize-handle.active {
+  background: #00ffff66;
+}
+
+/* Neon button */
+.btn-cyber {
+  background: transparent;
+  border: 1px solid #00ffff;
+  color: #00ffff;
+  padding: 6px 16px;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.btn-cyber:hover {
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+.btn-cyber:active {
+  background: rgba(0, 255, 255, 0.2);
+}
+.btn-cyber.danger {
+  border-color: #ff0051;
+  color: #ff0051;
+}
+.btn-cyber.danger:hover {
+  background: rgba(255, 0, 81, 0.1);
+  box-shadow: 0 0 15px rgba(255, 0, 81, 0.3);
+}
+.btn-cyber.success {
+  border-color: #00ff41;
+  color: #00ff41;
+}
+.btn-cyber.success:hover {
+  background: rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+}
+.btn-cyber.filled {
+  background: rgba(0, 255, 255, 0.15);
+}
+
+/* Card styling */
+.card-cyber {
+  background: #151922;
+  border: 1px solid #2a3441;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+.card-cyber:hover {
+  border-color: #00ffff44;
+}
+
+/* Tree view */
+.tree-item {
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tree-item:hover {
+  background: rgba(0, 255, 255, 0.08);
+}
+.tree-item.active {
+  background: rgba(0, 255, 255, 0.15);
+  color: #00ffff;
+}
+.tree-item.deleted {
+  color: #ff6b6b;
+}
+.tree-item.spoofed {
+  color: #ff0051;
+  font-weight: 600;
+}
+
+/* Tab bar */
+.tab-item {
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  color: #a0a0a0;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab-item:hover {
+  color: #e0e0e0;
+  background: rgba(255, 255, 255, 0.03);
+}
+.tab-item.active {
+  color: #00ffff;
+  border-bottom-color: #00ffff;
+}
+
+/* Log level colors */
+.log-info { color: #00ffff; }
+.log-warning { color: #ffea00; }
+.log-error { color: #ff0051; }
+.log-debug { color: #a0a0a0; }
+.log-critical { color: #ff0051; font-weight: bold; }
+
+/* Status badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-active { background: rgba(0, 255, 65, 0.15); color: #00ff41; border: 1px solid rgba(0, 255, 65, 0.3); }
+.badge-review { background: rgba(255, 234, 0, 0.15); color: #ffea00; border: 1px solid rgba(255, 234, 0, 0.3); }
+.badge-closed { background: rgba(160, 160, 160, 0.15); color: #a0a0a0; border: 1px solid rgba(160, 160, 160, 0.3); }
+.badge-archived { background: rgba(100, 100, 160, 0.15); color: #8888cc; border: 1px solid rgba(100, 100, 160, 0.3); }
+.badge-critical { background: rgba(255, 0, 81, 0.15); color: #ff0051; border: 1px solid rgba(255, 0, 81, 0.3); }
+.badge-high { background: rgba(255, 120, 0, 0.15); color: #ff7800; border: 1px solid rgba(255, 120, 0, 0.3); }
+.badge-medium { background: rgba(255, 234, 0, 0.15); color: #ffea00; border: 1px solid rgba(255, 234, 0, 0.3); }
+.badge-low { background: rgba(0, 255, 65, 0.15); color: #00ff41; border: 1px solid rgba(0, 255, 65, 0.3); }
+
+/* Progress bar */
+.progress-bar {
+  height: 4px;
+  background: #1a1f2e;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #00ff41);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Hex viewer */
+.hex-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  padding: 1px 3px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.hex-cell:hover {
+  background: rgba(0, 255, 255, 0.2);
+}
+.hex-cell.highlighted {
+  background: rgba(0, 255, 255, 0.15);
+  color: #00ffff;
+}
+
+/* Gauge */
+.gauge-ring {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+/* Animation */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Drag and drop */
+.drop-zone {
+  border: 2px dashed #2a3441;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+.drop-zone.active {
+  border-color: #00ffff;
+  background: rgba(0, 255, 255, 0.05);
+}
